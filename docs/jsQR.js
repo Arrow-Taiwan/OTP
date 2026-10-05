@@ -1,0 +1,1 @@
+function jsQR() { return null; }

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>momo OTP</title>
+  <link rel="stylesheet" href="./app.css">
+</head>
+<body>
+  <header class="bar">
+    <span class="bar-left"></span>
+    <h1>momo OTP</h1>
+    <div class="bar-right">
+      <label class="icon-btn" title="上傳 QR 圖片">
+        +
+        <input id="fileQr" type="file" accept="image/*" hidden>
+      </label>
+      <button type="button" class="icon-btn" id="btnDel" title="刪除目前選取">🗑</button>
+      <button type="button" class="btn-sync" id="btnSync">校時</button>
+      <button type="button" class="icon-btn" id="btnGear" title="GitHub 設定">⚙</button>
+    </div>
+  </header>
+  <p class="status" id="status"></p>
+  <main id="list"></main>
+  <p class="hint" id="hint"></p>
+  <p class="save-warn hidden" id="saveWarn">QR 金鑰還在這個分頁，尚未寫進 GitHub。關掉或換電腦就會遺失，請按 ⚙ 填 Token 後按「再存進 GitHub」。</p>
+  <p class="center"><button type="button" class="retry hidden" id="btnRetry">再存進 GitHub</button></p>
+
+  <dialog id="dlg">
+    <form id="dlgForm" method="dialog">
+      <h2>新增／確認帳號</h2>
+      <p class="dlg-msg" id="dlgMsg"></p>
+      <label>統編<input id="fTax" type="text" inputmode="numeric" maxlength="8" placeholder="27365925"></label>
+      <label>廠編<input id="fVendor" type="text" inputmode="numeric" maxlength="6" placeholder="014109"></label>
+      <label>使用人<input id="fPerson" type="text" maxlength="20" placeholder="許峻瑋"></label>
+      <menu>
+        <button type="button" id="dlgCancel">取消</button>
+        <button type="submit" class="primary" id="dlgOk">儲存</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <dialog id="dlgGh">
+    <form id="ghForm" method="dialog">
+      <h2>GitHub 寫回設定</h2>
+      <p class="hint" style="text-align:left;margin:0 0 .6rem">第一次用 ＋ 上傳 QR 後，要用 Token 把 vault.json 寫回倉庫。之後換電腦或清快取直接開網址就能看 OTP。Token 只留在這個分頁。</p>
+      <label>owner<input id="fOwner" type="text" placeholder="你的 GitHub 帳號"></label>
+      <label>repo<input id="fRepo" type="text" placeholder="scm-otp"></label>
+      <label>branch<input id="fBranch" type="text" placeholder="main"></label>
+      <label>vault 路徑<input id="fVaultPath" type="text" placeholder="docs/vault.json"></label>
+      <label>Personal Access Token（contents:write）<input id="fToken" type="password" autocomplete="off"></label>
+      <p class="dlg-msg" id="ghMsg"></p>
+      <menu>
+        <button type="button" id="ghCancel">關閉</button>
+        <button type="submit" class="primary">記住這個分頁</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <script src="./jsQR.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
