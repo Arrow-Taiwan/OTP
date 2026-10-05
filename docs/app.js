@@ -304,10 +304,10 @@ async function syncTime() {
   $("hint").style.color = "";
   const t0 = Date.now();
   try {
-    const r = await fetch("https://api.github.com/", { cache: "no-store" });
+    const r = await fetch("./vault.json?ts=" + Date.now(), { cache: "no-store" });
     const t1 = Date.now();
     const hdr = r.headers.get("Date");
-    if (!hdr) throw new Error("沒有 Date");
+    if (!hdr) throw new Error("伺服器沒有提供時間");
     const mid = (t0 + t1) / 2;
     timeOffsetMs = new Date(hdr).getTime() - mid;
     const sec = Math.round(timeOffsetMs / 1000);
@@ -316,7 +316,7 @@ async function syncTime() {
       : ("校時完成，已校正 " + (sec > 0 ? "+" : "") + sec + " 秒。");
     await refresh();
   } catch (e) {
-    $("hint").textContent = "校時失敗，請確認有網路。";
+    $("hint").textContent = "校時失敗：" + (e.message || "請確認有網路。");
     $("hint").style.color = "#8a1c1c";
   }
 }
