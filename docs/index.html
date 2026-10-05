@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>momo OTP</title>
+  <meta name="description" content="momo OTP">
+  <meta property="og:title" content="momo OTP">
+  <meta property="og:description" content="momo OTP">
+  <meta property="og:site_name" content="momo OTP">
   <link rel="stylesheet" href="./app.css">
 </head>
 <body>
@@ -23,7 +27,7 @@
   <p class="status" id="status"></p>
   <main id="list"></main>
   <p class="hint" id="hint"></p>
-  <p class="save-warn hidden" id="saveWarn">QR 金鑰還在這個分頁，尚未寫進 GitHub。關掉或換電腦就會遺失，請按 ⚙ 填 Token 後按「再存進 GitHub」。</p>
+  <p class="save-warn hidden" id="saveWarn"></p>
   <p class="center"><button type="button" class="retry hidden" id="btnRetry">再存進 GitHub</button></p>
 
   <dialog id="dlg">
@@ -43,7 +47,7 @@
   <dialog id="dlgGh">
     <form id="ghForm" method="dialog">
       <h2>GitHub 寫回設定</h2>
-      <p class="hint" style="text-align:left;margin:0 0 .6rem">第一次用 ＋ 上傳 QR 後，要用 Token 把 vault.json 寫回倉庫。之後換電腦或清快取直接開網址就能看 OTP。Token 只留在這個分頁。</p>
+      <p class="hint" id="ghHint" style="text-align:left;margin:0 0 .6rem"></p>
       <label>owner<input id="fOwner" type="text" placeholder="你的 GitHub 帳號"></label>
       <label>repo<input id="fRepo" type="text" placeholder="scm-otp"></label>
       <label>branch<input id="fBranch" type="text" placeholder="main"></label>
@@ -58,6 +62,6 @@
   </dialog>
 
   <script src="./jsQR.js?v=20261005"></script>
-  <script src="./app.js?v=20261005"></script>
+  <script src="./app.js?v=20261005b"></script>
 </body>
 </html>

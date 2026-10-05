@@ -397,6 +397,9 @@ window.addEventListener("beforeunload", function (ev) {
   }
 });
 
+$("saveWarn").textContent = "QR 金鑰還在這個分頁，尚未寫進 GitHub。關掉或換電腦就會遺失，請按 ⚙ 填 Token 後按「再存進 GitHub」。";
+$("ghHint").textContent = "第一次用 ＋ 上傳 QR 後，要用 Token 把 vault.json 寫回倉庫。之後換電腦或清快取直接開網址就能看 OTP。Token 只留在這個分頁。";
+
 (async function boot() {
   await loadGhConfig();
   try {
