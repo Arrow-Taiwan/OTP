@@ -30,6 +30,42 @@
   <p class="save-warn hidden" id="saveWarn"></p>
   <p class="center"><button type="button" class="retry hidden" id="btnRetry">再存進 GitHub</button></p>
 
+  <section class="shop" id="shop">
+    <header class="bar shop-bar">
+      <span class="shop-spacer"></span>
+      <h2>登入管理</h2>
+      <div class="bar-right">
+        <label class="shop-pill">新增<input id="shopFile" type="file" accept="image/*" hidden></label>
+        <button type="button" class="shop-pill" id="shopSync">校時</button>
+      </div>
+    </header>
+    <div class="shop-body">
+      <div id="shopList"></div>
+      <p class="shop-hint" id="shopHint"></p>
+    </div>
+  </section>
+
+  <dialog id="dlgShop">
+    <form id="shopForm" method="dialog">
+      <h2>新增 momo 店+</h2>
+      <p class="dlg-msg" id="shopMsg"></p>
+      <label>店編<input id="sCode" type="text" maxlength="20" placeholder="TP0010178"></label>
+      <label>使用人<input id="sUser" type="text" maxlength="20" placeholder="許峻瑋"></label>
+      <label>FIDO 通行金鑰
+        <select id="sFido">
+          <option value="2">尚未啟用</option>
+          <option value="0" selected>暫停服務</option>
+          <option value="1">已啟用</option>
+        </select>
+      </label>
+      <label class="check"><input id="sLogin" type="checkbox" checked> 目前登入</label>
+      <menu>
+        <button type="button" id="shopCancel">取消</button>
+        <button type="submit" class="primary">儲存</button>
+      </menu>
+    </form>
+  </dialog>
+
   <dialog id="dlg">
     <form id="dlgForm" method="dialog">
       <h2>新增／確認帳號</h2>
@@ -61,7 +97,7 @@
     </form>
   </dialog>
 
-  <script src="./jsQR.js?v=20261005"></script>
-  <script src="./app.js?v=20261005b"></script>
+  <script src="./jsQR.js?v=20261006"></script>
+  <script src="./app.js?v=20261006"></script>
 </body>
 </html>

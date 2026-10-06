@@ -119,7 +119,7 @@ async function decodeImageFile(file) {
   }
 }
 
-let pack = { selected: "", accounts: [] };
+let pack = { selected: "", accounts: [], shopAccounts: [] };
 let pending = null;
 let gh = { owner: "", repo: "scm-otp", branch: "main", vaultPath: "docs/vault.json", token: "" };
 let timer = null;
@@ -139,29 +139,38 @@ function guessRepo() {
   if (parts.length && location.hostname.endsWith(".github.io")) return parts[0];
   return "scm-otp";
 }
+function savedCount() {
+  return (pack.accounts || []).length + (pack.shopAccounts || []).length;
+}
 function setSaveState(ok, msg) {
   savedOnGithub = !!ok;
   const warn = $("saveWarn");
   const retry = $("btnRetry");
   const st = $("status");
+  const n = (pack.accounts || []).length;
+  const shopN = (pack.shopAccounts || []).length;
   if (ok) {
     warn.classList.add("hidden");
     retry.classList.add("hidden");
     st.className = "status";
-    st.textContent = msg || ("倉庫已保存 " + (pack.accounts || []).length + " 筆，換電腦或清快取都不必再傳 QR。");
+    st.textContent = msg || (n > 0
+      ? ("倉庫已保存 " + n + " 筆，換電腦或清快取都不必再傳 QR。")
+      : ("店+ 已保存 " + shopN + " 筆。"));
+  } else if (n > 0) {
+    warn.classList.remove("hidden");
+    retry.classList.remove("hidden");
+    st.className = "status warn";
+    st.textContent = msg || "這 " + n + " 筆還沒寫進 GitHub，關掉分頁就會不見。";
+  } else if (shopN > 0) {
+    warn.classList.remove("hidden");
+    retry.classList.remove("hidden");
+    st.className = "status warn";
+    st.textContent = msg || "店+ 這 " + shopN + " 筆還沒寫進 GitHub，關掉分頁就會不見。";
   } else {
-    const n = (pack.accounts || []).length;
-    if (n > 0) {
-      warn.classList.remove("hidden");
-      retry.classList.remove("hidden");
-      st.className = "status warn";
-      st.textContent = msg || "這 " + n + " 筆還沒寫進 GitHub，關掉分頁就會不見。";
-    } else {
-      warn.classList.add("hidden");
-      retry.classList.add("hidden");
-      st.className = "status warn";
-      st.textContent = msg || "倉庫還沒有 OTP。請先 ⚙ 填 Token，再 ＋ 上傳綁定 QR。";
-    }
+    warn.classList.add("hidden");
+    retry.classList.add("hidden");
+    st.className = "status warn";
+    st.textContent = msg || "倉庫還沒有 OTP。請先 ⚙ 填 Token，再 ＋ 上傳綁定 QR。";
   }
 }
 
@@ -185,8 +194,9 @@ async function loadVaultFile() {
   const r = await fetch("./vault.json", { cache: "no-store" });
   if (!r.ok) throw new Error("讀不到 vault.json");
   const j = await r.json();
-  if (j && Array.isArray(j.accounts)) pack = { selected: j.selected || "", accounts: j.accounts };
-  else pack = { selected: "", accounts: [] };
+  if (j && Array.isArray(j.accounts)) {
+    pack = { selected: j.selected || "", accounts: j.accounts, shopAccounts: Array.isArray(j.shopAccounts) ? j.shopAccounts : [] };
+  } else pack = { selected: "", accounts: [], shopAccounts: [] };
 }
 
 function paint(rows) {
@@ -229,6 +239,7 @@ async function refresh() {
     });
   }
   paint(rows);
+  await refreshShop();
 }
 
 function hasToken() {
@@ -238,7 +249,11 @@ function hasToken() {
   return !!(gh.token && gh.owner && gh.repo);
 }
 async function persist() {
-  const payload = { selected: pack.selected || "", accounts: pack.accounts || [] };
+  const payload = {
+    selected: pack.selected || "",
+    accounts: pack.accounts || [],
+    shopAccounts: pack.shopAccounts || []
+  };
   const text = JSON.stringify(payload);
   if (!hasToken()) {
     setSaveState(false, "請先按 ⚙ 填 GitHub Token，否則 QR 金鑰不會進倉庫。");
@@ -274,7 +289,8 @@ async function persist() {
   if (!check.ok) throw new Error("寫入後讀回失敗，請再按「再存進 GitHub」。");
   const checked = await check.json();
   const decoded = JSON.parse(decodeURIComponent(escape(atob(checked.content.replace(/\n/g, "")))));
-  if (!decoded.accounts || decoded.accounts.length !== payload.accounts.length) {
+  const gotShop = (decoded.shopAccounts || []).length;
+  if (!decoded.accounts || decoded.accounts.length !== payload.accounts.length || gotShop !== payload.shopAccounts.length) {
     setSaveState(false, "倉庫筆數不對，請再存一次。");
     throw new Error("倉庫確認失敗，請再按「再存進 GitHub」。");
   }
@@ -311,13 +327,17 @@ async function syncTime() {
     const mid = (t0 + t1) / 2;
     timeOffsetMs = new Date(hdr).getTime() - mid;
     const sec = Math.round(timeOffsetMs / 1000);
-    $("hint").textContent = sec === 0
+    const done = sec === 0
       ? "校時完成，與網路時間一致。"
       : ("校時完成，已校正 " + (sec > 0 ? "+" : "") + sec + " 秒。");
+    $("hint").textContent = done;
+    if ($("shopHint")) { $("shopHint").textContent = "校時完成"; $("shopHint").style.color = ""; }
     await refresh();
   } catch (e) {
-    $("hint").textContent = "校時失敗：" + (e.message || "請確認有網路。");
+    const fail = "校時失敗：" + (e.message || "請確認有網路。");
+    $("hint").textContent = fail;
     $("hint").style.color = "#8a1c1c";
+    if ($("shopHint")) { $("shopHint").textContent = fail; $("shopHint").style.color = "#8a1c1c"; }
   }
 }
 $("btnSync").addEventListener("click", function () { syncTime(); });
@@ -391,11 +411,210 @@ $("btnRetry").addEventListener("click", async function () {
   }
 });
 window.addEventListener("beforeunload", function (ev) {
-  if (!savedOnGithub && pack.accounts && pack.accounts.length) {
+  if (!savedOnGithub && savedCount()) {
     ev.preventDefault();
     ev.returnValue = "";
   }
 });
+
+let shopPending = null;
+function esc(s) {
+  return String(s || "").replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+function fidoOf(a) {
+  const att = String(a.attestationStatus == null ? "2" : a.attestationStatus);
+  if (att === "0") return { key: "disabled", label: "暫停服務" };
+  if (att === "1") return { key: "enabled", label: "已啟用" };
+  return { key: "not_registered", label: "尚未啟用" };
+}
+function pieSvg(elapsed) {
+  const frac = Math.max(0, Math.min(59, elapsed)) / 60;
+  if (frac <= 0.001) {
+    return '<svg class="pie" width="36" height="36" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15" fill="#f2f3f7"/></svg>';
+  }
+  const a = frac * Math.PI * 2;
+  const x = 18 + 15 * Math.sin(a);
+  const y = 18 - 15 * Math.cos(a);
+  const large = frac > 0.5 ? 1 : 0;
+  return '<svg class="pie" width="36" height="36" viewBox="0 0 36 36" aria-hidden="true">' +
+    '<circle cx="18" cy="18" r="15" fill="#f2f3f7"/>' +
+    '<path fill="#222" d="M18 18 L18 3 A15 15 0 ' + large + ' 1 ' + x.toFixed(2) + ' ' + y.toFixed(2) + ' Z"/></svg>';
+}
+function parseShopQr(text) {
+  const raw = String(text || "").trim();
+  const compact = raw.replace(/\s+/g, "");
+  const acc = { secret: "", supplierCode: "", userName: "", entpName: "", attestationStatus: "0", period: 60, digits: 6 };
+  if (compact.charAt(0) === "{" || compact.charAt(0) === "[") {
+    const obj = JSON.parse(raw);
+    const flat = {};
+    (function walk(o) {
+      if (!o || typeof o !== "object") return;
+      Object.keys(o).forEach(function (k) {
+        if (o[k] && typeof o[k] === "object") walk(o[k]);
+        else flat[k] = o[k];
+      });
+    })(obj);
+    ["confirmKey", "secret", "otpKey", "key"].some(function (k) {
+      if (!flat[k]) return false;
+      const v = String(flat[k]).toUpperCase().replace(/[^A-Z2-7]/g, "");
+      if (v.length >= 16) { acc.secret = v; return true; }
+      return false;
+    });
+    acc.supplierCode = String(flat.supplierCode || flat.entpCode || flat.storeCode || "");
+    acc.userName = String(flat.userName || flat.idName || "");
+    acc.entpName = String(flat.entpName || "");
+    if (flat.attestationStatus != null && flat.attestationStatus !== "") acc.attestationStatus = String(flat.attestationStatus);
+    if (!acc.secret) throw new Error("這張 QR 沒有 confirmKey。店+ 掃描用的是一次性 authCode，過期後不能再換成金鑰。");
+    return acc;
+  }
+  try {
+    const p = parseQrText(raw);
+    acc.secret = p.secret;
+    acc.supplierCode = p.vendor || "";
+    acc.userName = p.person || "";
+    return acc;
+  } catch (e) {
+    if (compact && compact.length < 80 && !/^otpauth:/i.test(compact)) {
+      throw new Error("這是一次性綁定 QR（authCode），不是 OTP 金鑰。店+ 會送到 user/bindDevice.scm 換成 confirmKey。過期後無法重產。");
+    }
+    throw e;
+  }
+}
+async function refreshShop() {
+  const host = $("shopList");
+  const hint = $("shopHint");
+  if (!host) return;
+  const list = (pack.shopAccounts || []).slice().sort(function (a, b) { return (b.isLogining ? 1 : 0) - (a.isLogining ? 1 : 0); });
+  const emptyText = "尚未綁定。請按「新增」上傳含 confirmKey 的店+ 金鑰。";
+  if (!list.length) {
+    host.innerHTML = "";
+    if (hint && !hint.textContent) hint.textContent = emptyText;
+    return;
+  }
+  if (hint && hint.textContent === emptyText) hint.textContent = "";
+  const now = nowSec();
+  const elapsed = now % 60;
+  const cards = [];
+  for (const a of list) {
+    const code = await totpAt(a.secret, 60, 6, now);
+    const fido = fidoOf(a);
+    const blink = elapsed >= 55 ? " blink" : "";
+    cards.push(
+      '<article class="shop-card" data-id="' + esc(a.id) + '">' +
+      '<div class="shop-head"><div><div class="shop-id">' + esc(a.supplierCode || "") + '</div>' +
+      '<div class="shop-user">' + esc(a.userName || "") + '</div></div>' +
+      (a.isLogining ? '<span class="shop-badge">目前登入</span>' : '<span></span>') +
+      '</div><div class="shop-line"></div>' +
+      '<button type="button" class="shop-fido" data-act="fido">' +
+      '<span class="fico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2" fill="#4f59b8"/><path d="M4 18c.6-2.6 2.6-4 5-4s4.4 1.4 5 4" fill="#4f59b8"/><path d="M16.2 10.2a2.2 2.2 0 1 1 2.2 3.6l-1.2 1.2.8.8-1.6 1.6-2.2-2.2 1.2-1.2a2.2 2.2 0 0 1 .8-3.6z" fill="#4f59b8"/></svg></span>' +
+      '<b>FIDO 通行金鑰</b><span class="shop-side">' + esc(fido.label) + '</span></button>' +
+      '<div class="shop-line"></div>' +
+      '<div class="shop-otp">' + pieSvg(elapsed) +
+      '<div><div class="otp-label">OTP</div><div class="shop-otp-code' + blink + '">' + esc(fmtCode(code)) + '</div></div>' +
+      '<button type="button" class="shop-unbind" data-act="unbind">解除</button></div></article>'
+    );
+  }
+  host.innerHTML = cards.join("");
+}
+$("shopFile").addEventListener("change", async function () {
+  const file = this.files && this.files[0];
+  this.value = "";
+  if (!file) return;
+  $("shopHint").dataset.lock = "1";
+  $("shopHint").style.color = "";
+  $("shopHint").textContent = "讀取 QR…";
+  try {
+    const raw = await decodeImageFile(file);
+    shopPending = parseShopQr(raw);
+    $("sCode").value = shopPending.supplierCode || "";
+    $("sUser").value = shopPending.userName || "";
+    $("sFido").value = shopPending.attestationStatus || "0";
+    $("sLogin").checked = true;
+    $("shopMsg").textContent = "已讀到 confirmKey。請確認店編與使用人。";
+    delete $("shopHint").dataset.lock;
+    $("dlgShop").showModal();
+  } catch (e) {
+    $("shopHint").textContent = e.message || "讀取失敗";
+    $("shopHint").style.color = "#8a1c1c";
+    delete $("shopHint").dataset.lock;
+  }
+});
+$("shopCancel").addEventListener("click", function () { $("dlgShop").close(); shopPending = null; });
+$("shopForm").addEventListener("submit", async function (ev) {
+  ev.preventDefault();
+  if (!shopPending) { $("dlgShop").close(); return; }
+  const row = {
+    id: (Date.now().toString(36) + Math.random().toString(36).slice(2, 8)),
+    secret: shopPending.secret,
+    period: 60,
+    digits: 6,
+    supplierCode: $("sCode").value.trim(),
+    userName: $("sUser").value.trim(),
+    entpName: shopPending.entpName || "",
+    attestationStatus: $("sFido").value,
+    isLogining: $("sLogin").checked
+  };
+  pack.shopAccounts = pack.shopAccounts || [];
+  if (pack.shopAccounts.some(function (a) { return a.secret === row.secret; })) {
+    $("shopMsg").textContent = "這組金鑰已經在清單裡。";
+    return;
+  }
+  if (row.isLogining) pack.shopAccounts.forEach(function (a) { a.isLogining = false; });
+  pack.shopAccounts.push(row);
+  try {
+    await persist();
+    $("dlgShop").close();
+    shopPending = null;
+    $("shopHint").dataset.lock = "";
+    delete $("shopHint").dataset.lock;
+    await refresh();
+  } catch (e) {
+    $("shopMsg").textContent = e.message || "儲存失敗";
+  }
+});
+$("shopList").addEventListener("click", async function (ev) {
+  const act = ev.target.closest("[data-act]");
+  const card = ev.target.closest(".shop-card");
+  if (!act || !card) return;
+  const id = card.getAttribute("data-id");
+  const row = (pack.shopAccounts || []).find(function (a) { return a.id === id; });
+  if (!row) return;
+  if (act.getAttribute("data-act") === "unbind") {
+    if (!confirm("解除OTP?\n解除OTP綁定後，將同步解除FIDO通行金鑰。\n若未重新綁定裝置將無法登入。")) return;
+    pack.shopAccounts = pack.shopAccounts.filter(function (a) { return a.id !== id; });
+    try { await persist(); } catch (e) {
+      $("shopHint").textContent = e.message;
+      $("shopHint").style.color = "#8a1c1c";
+    }
+    await refresh();
+    return;
+  }
+  const fido = fidoOf(row);
+  if (fido.key === "enabled") {
+    if (!confirm("解除通行金鑰?\n若解除通行金鑰，未來需以密碼登入。")) return;
+    row.attestationStatus = "2";
+    try { await persist(); } catch (e) {
+      $("shopHint").textContent = e.message;
+      $("shopHint").style.color = "#8a1c1c";
+    }
+    await refresh();
+    return;
+  }
+  if (fido.key === "disabled") {
+    $("shopHint").dataset.lock = "1";
+    $("shopHint").style.color = "";
+    $("shopHint").textContent = "FIDO 暫停服務";
+    setTimeout(function () { delete $("shopHint").dataset.lock; refreshShop(); }, 1600);
+    return;
+  }
+  $("shopHint").dataset.lock = "1";
+  $("shopHint").style.color = "";
+  $("shopHint").textContent = "請先使用密碼登入，登入成功後前往完成通行金鑰設定。下次即可使用通行金鑰登入。通行金鑰要在 momo店+ 手機上完成。";
+  setTimeout(function () { delete $("shopHint").dataset.lock; refreshShop(); }, 4000);
+});
+$("shopSync").addEventListener("click", function () { syncTime(); });
 
 $("saveWarn").textContent = "QR 金鑰還在這個分頁，尚未寫進 GitHub。關掉或換電腦就會遺失，請按 ⚙ 填 Token 後按「再存進 GitHub」。";
 $("ghHint").textContent = "第一次用 ＋ 上傳 QR 後，要用 Token 把 vault.json 寫回倉庫。之後換電腦或清快取直接開網址就能看 OTP。Token 只留在這個分頁。";
@@ -404,9 +623,9 @@ $("ghHint").textContent = "第一次用 ＋ 上傳 QR 後，要用 Token 把 vau
   await loadGhConfig();
   try {
     await loadVaultFile();
-    setSaveState((pack.accounts || []).length > 0);
+    setSaveState(savedCount() > 0);
   } catch (e) {
-    pack = { selected: "", accounts: [] };
+    pack = { selected: "", accounts: [], shopAccounts: [] };
     setSaveState(false, "讀不到 vault.json，請確認已開 GitHub Pages。");
   }
   if (!timer) timer = setInterval(refresh, 1000);

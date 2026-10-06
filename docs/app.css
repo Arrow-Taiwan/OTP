@@ -203,3 +203,118 @@ dialog menu { display: flex; justify-content: flex-end; gap: .5rem; padding: .6r
 dialog button { font: inherit; padding: .35rem .8rem; border-radius: 8px; border: 1px solid #ccc; background: #fff; }
 dialog button.primary { background: var(--blue); color: #fff; border-color: var(--blue); }
 .dlg-msg { min-height: 1.2em; font-size: .85rem; color: #8a1c1c; }
+dialog select {
+  display: block;
+  width: 100%;
+  margin-top: .2rem;
+  padding: .4rem .5rem;
+  font: inherit;
+  color: var(--ink);
+}
+dialog label.check { display: flex; align-items: center; gap: .4rem; color: var(--ink); }
+dialog label.check input { width: auto; margin: 0; }
+
+.shop { margin-top: 1.4rem; background: #eef0f6; min-height: 70vh; }
+.shop-bar {
+  background: #5c67c4;
+  height: 56px;
+  padding: 0 .7rem;
+  position: relative;
+}
+.shop-spacer { display: none; }
+.shop-bar h2 {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin: 0;
+  text-align: center;
+  font-size: 1.12rem;
+  font-weight: 700;
+  pointer-events: none;
+}
+.shop-bar .bar-right { margin-left: auto; position: relative; z-index: 1; }
+.shop-pill {
+  appearance: none;
+  border: 1px solid #fff;
+  background: transparent;
+  color: #fff;
+  height: 30px;
+  padding: 0 .7rem;
+  border-radius: 8px;
+  font: inherit;
+  font-size: .9rem;
+  line-height: 28px;
+  cursor: pointer;
+}
+.shop-body { padding: .9rem .75rem 2rem; }
+.shop-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 1px 4px rgba(40, 40, 80, .08);
+  padding: .95rem 1rem .85rem;
+  margin-bottom: .8rem;
+}
+.shop-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .6rem; }
+.shop-id { font-weight: 800; font-size: 1.02rem; letter-spacing: .01em; }
+.shop-user { margin-top: .15rem; font-weight: 800; font-size: 1.05rem; }
+.shop-badge {
+  background: #4f59b8;
+  color: #fff;
+  border-radius: 8px;
+  font-size: .78rem;
+  padding: .18rem .45rem;
+  white-space: nowrap;
+}
+.shop-line { height: 1px; background: #ececf1; margin: .75rem 0 .65rem; }
+.shop-fido, .shop-otp {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: center;
+  gap: .55rem;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  padding: 0;
+}
+.shop-fido { cursor: pointer; }
+.fico {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #eef0fb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.shop-fido b { font-weight: 600; font-size: .98rem; }
+.shop-side { color: #9aa0ad; font-size: .92rem; }
+.shop-otp { margin-top: .15rem; }
+.otp-label { color: #8b909a; font-size: .82rem; margin-bottom: .05rem; }
+.shop-otp-code {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.05;
+}
+.shop-otp-code.blink { color: #e53935; animation: otpblink .25s steps(2) infinite; }
+@keyframes otpblink { 50% { opacity: .25; } }
+.shop-unbind {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #3d4db7;
+  font: inherit;
+  font-size: .95rem;
+  cursor: pointer;
+  padding: .2rem;
+}
+.shop-hint {
+  margin: .4rem .3rem 0;
+  color: var(--muted);
+  font-size: .9rem;
+  text-align: center;
+}
