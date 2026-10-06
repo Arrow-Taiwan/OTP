@@ -214,7 +214,7 @@ dialog select {
 dialog label.check { display: flex; align-items: center; gap: .4rem; color: var(--ink); }
 dialog label.check input { width: auto; margin: 0; }
 
-.shop { margin-top: 1.4rem; background: #000000; min-height: 70vh; }
+.shop { margin-top: 3.25rem; background: #000000; min-height: 70vh; }
 .shop-bar {
   background: #5c67c4;
   height: 56px;
