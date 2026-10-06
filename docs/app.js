@@ -311,7 +311,7 @@ $("btnDel").addEventListener("click", async function () {
   if (!confirm("刪除目前選取的這組 OTP？")) return;
   pack.accounts = (pack.accounts || []).filter(function (a) { return a.id !== pack.selected; });
   pack.selected = pack.accounts[0] ? pack.accounts[0].id : "";
-  try { await persist(); } catch (e) { $("hint").textContent = e.message; $("hint").style.color = "#8a1c1c"; }
+  try { await persist(); } catch (e) { $("hint").textContent = e.message; $("hint").style.color = "#ff8a80"; }
   await refresh();
 });
 
@@ -336,8 +336,8 @@ async function syncTime() {
   } catch (e) {
     const fail = "校時失敗：" + (e.message || "請確認有網路。");
     $("hint").textContent = fail;
-    $("hint").style.color = "#8a1c1c";
-    if ($("shopHint")) { $("shopHint").textContent = fail; $("shopHint").style.color = "#8a1c1c"; }
+    $("hint").style.color = "#ff8a80";
+    if ($("shopHint")) { $("shopHint").textContent = fail; $("shopHint").style.color = "#ff8a80"; }
   }
 }
 $("btnSync").addEventListener("click", function () { syncTime(); });
@@ -371,7 +371,7 @@ $("fileQr").addEventListener("change", async function () {
     $("dlg").showModal();
   } catch (e) {
     $("hint").textContent = e.message || "讀取失敗";
-    $("hint").style.color = "#8a1c1c";
+    $("hint").style.color = "#ff8a80";
   }
 });
 $("dlgCancel").addEventListener("click", function () { $("dlg").close(); pending = null; });
@@ -407,7 +407,7 @@ $("dlgForm").addEventListener("submit", async function (ev) {
 $("btnRetry").addEventListener("click", async function () {
   try { await persist(); await refresh(); } catch (e) {
     $("hint").textContent = e.message;
-    $("hint").style.color = "#8a1c1c";
+    $("hint").style.color = "#ff8a80";
   }
 });
 window.addEventListener("beforeunload", function (ev) {
@@ -537,7 +537,7 @@ $("shopFile").addEventListener("change", async function () {
     $("dlgShop").showModal();
   } catch (e) {
     $("shopHint").textContent = e.message || "讀取失敗";
-    $("shopHint").style.color = "#8a1c1c";
+    $("shopHint").style.color = "#ff8a80";
     delete $("shopHint").dataset.lock;
   }
 });
@@ -586,7 +586,7 @@ $("shopList").addEventListener("click", async function (ev) {
     pack.shopAccounts = pack.shopAccounts.filter(function (a) { return a.id !== id; });
     try { await persist(); } catch (e) {
       $("shopHint").textContent = e.message;
-      $("shopHint").style.color = "#8a1c1c";
+      $("shopHint").style.color = "#ff8a80";
     }
     await refresh();
     return;
@@ -597,7 +597,7 @@ $("shopList").addEventListener("click", async function (ev) {
     row.attestationStatus = "2";
     try { await persist(); } catch (e) {
       $("shopHint").textContent = e.message;
-      $("shopHint").style.color = "#8a1c1c";
+      $("shopHint").style.color = "#ff8a80";
     }
     await refresh();
     return;

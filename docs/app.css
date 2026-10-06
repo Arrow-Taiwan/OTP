@@ -2,7 +2,7 @@
   --blue: #1e88ff;
   --ink: #1a1a1a;
   --muted: #6b6b6b;
-  --bg: #ececec;
+  --bg: #000000;
   --line: #e6e6e6;
 }
 * { box-sizing: border-box; }
@@ -113,7 +113,7 @@ html, body {
 }
 .hint {
   margin: 1rem;
-  color: var(--muted);
+  color: #d0d0d0;
   font-size: .92rem;
   text-align: center;
 }
@@ -121,9 +121,9 @@ html, body {
   margin: .55rem 1rem 0;
   text-align: center;
   font-size: .88rem;
-  color: #1b5e3b;
+  color: #8ee0a8;
 }
-.status.warn { color: #8a1c1c; }
+.status.warn { color: #ff8a80; }
 .save-warn {
   margin: .4rem 1rem;
   padding: .55rem .7rem;
@@ -214,7 +214,7 @@ dialog select {
 dialog label.check { display: flex; align-items: center; gap: .4rem; color: var(--ink); }
 dialog label.check input { width: auto; margin: 0; }
 
-.shop { margin-top: 1.4rem; background: #eef0f6; min-height: 70vh; }
+.shop { margin-top: 1.4rem; background: #000000; min-height: 70vh; }
 .shop-bar {
   background: #5c67c4;
   height: 56px;
@@ -314,7 +314,7 @@ dialog label.check input { width: auto; margin: 0; }
 }
 .shop-hint {
   margin: .4rem .3rem 0;
-  color: var(--muted);
+  color: #d0d0d0;
   font-size: .9rem;
   text-align: center;
 }
