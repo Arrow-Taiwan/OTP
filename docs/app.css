@@ -61,12 +61,31 @@ html, body {
 #list { background: #fff; }
 .row {
   display: grid;
-  grid-template-columns: 8px 1fr;
+  grid-template-columns: 8px 1fr 92px;
   align-items: stretch;
   border-bottom: 1px solid var(--line);
   min-height: 118px;
   background: #fff;
 }
+.remain {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #111;
+}
+.remain b {
+  font-size: 2rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.remain span {
+  margin-top: .28rem;
+  color: #666;
+  font-size: .72rem;
+}
+.remain.soon b { color: #e53935; }
 .row .strip { background: #2f3f8f; }
 .row .body { padding: .85rem 1rem .7rem 1.1rem; }
 .code {

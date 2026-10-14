@@ -199,6 +199,12 @@ async function loadVaultFile() {
   } else pack = { selected: "", accounts: [], shopAccounts: [] };
 }
 
+function leftSec(unix, period) {
+  const p = Math.max(1, period || 60);
+  const used = ((unix % p) + p) % p;
+  return p - used;
+}
+
 function paint(rows) {
   const host = $("list");
   const hint = $("hint");
@@ -217,6 +223,7 @@ function paint(rows) {
       "<div>廠編<b>" + (r.vendor || "") + "</b></div>" +
       "<div>使用人<b>" + (r.person || "") + "</b></div>" +
       "</div></div>" +
+      "<div class=\"remain" + (r.left <= 5 ? " soon" : "") + "\"><b>" + r.left + "</b><span>秒後更新</span></div>" +
       "</article>"
     );
   }).join("");
@@ -227,14 +234,15 @@ async function refresh() {
   const now = nowSec();
   const rows = [];
   for (const a of accs) {
-    const code = await totpAt(a.secret, a.period || 60, a.digits || 6, now);
+    const period = a.period || 60;
+    const code = await totpAt(a.secret, period, a.digits || 6, now);
     rows.push({
       id: a.id,
       code: code,
       tax: a.tax || "",
       vendor: a.vendor || "",
       person: a.person || "",
-      selected: pack.selected === a.id
+      left: leftSec(now, period)
     });
   }
   paint(rows);
@@ -495,7 +503,7 @@ async function refreshShop() {
       '<b>FIDO 通行金鑰</b><span class="shop-side">' + esc(fido.label) + '</span></button>' +
       '<div class="shop-line"></div>' +
       '<div class="shop-otp">' + pieSvg(elapsed) +
-      '<div><div class="otp-label">OTP</div><div class="shop-otp-code' + blink + '">' + esc(fmtCode(code)) + '</div></div>' +
+      '<div><div class="otp-label">OTP · 剩 ' + (60 - elapsed) + ' 秒</div><div class="shop-otp-code' + blink + '">' + esc(fmtCode(code)) + '</div></div>' +
       '<button type="button" class="shop-unbind" data-act="unbind">解除</button></div></article>'
     );
   }
