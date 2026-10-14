@@ -61,12 +61,11 @@ html, body {
 #list { background: #fff; }
 .row {
   display: grid;
-  grid-template-columns: 8px 1fr 48px;
+  grid-template-columns: 8px 1fr;
   align-items: stretch;
   border-bottom: 1px solid var(--line);
   min-height: 118px;
   background: #fff;
-  cursor: pointer;
 }
 .row .strip { background: #2f3f8f; }
 .row .body { padding: .85rem 1rem .7rem 1.1rem; }
@@ -91,25 +90,6 @@ html, body {
   font-size: .95rem;
   font-weight: 600;
   margin-top: .12rem;
-}
-.pick {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.dot {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 2px solid #111;
-  position: relative;
-}
-.dot.on::after {
-  content: "";
-  position: absolute;
-  inset: 3px;
-  border-radius: 50%;
-  background: #111;
 }
 .hint {
   margin: 1rem;

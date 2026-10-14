@@ -217,7 +217,6 @@ function paint(rows) {
       "<div>廠編<b>" + (r.vendor || "") + "</b></div>" +
       "<div>使用人<b>" + (r.person || "") + "</b></div>" +
       "</div></div>" +
-      "<div class=\"pick\"><span class=\"dot" + (r.selected ? " on" : "") + "\"></span></div>" +
       "</article>"
     );
   }).join("");
@@ -298,22 +297,6 @@ async function persist() {
   $("hint").textContent = "已寫進 GitHub。約一分鐘後換電腦開同一網址即可，不必再傳 QR。";
   $("hint").style.color = "";
 }
-
-$("list").addEventListener("click", function (ev) {
-  const row = ev.target.closest(".row");
-  if (!row) return;
-  pack.selected = row.getAttribute("data-id");
-  refresh();
-});
-
-$("btnDel").addEventListener("click", async function () {
-  if (!pack.selected) { $("hint").textContent = "請先點一筆再刪。"; return; }
-  if (!confirm("刪除目前選取的這組 OTP？")) return;
-  pack.accounts = (pack.accounts || []).filter(function (a) { return a.id !== pack.selected; });
-  pack.selected = pack.accounts[0] ? pack.accounts[0].id : "";
-  try { await persist(); } catch (e) { $("hint").textContent = e.message; $("hint").style.color = "#ff8a80"; }
-  await refresh();
-});
 
 async function syncTime() {
   $("hint").textContent = "校時中…";
